@@ -293,6 +293,10 @@ EnemyRanText:
 	text_end
 
 MainInBattleLoop:
+	; Saved AI target data belongs only to the current player action.
+	xor a
+	ld [wAIMoveSpamAvoider], a
+	ld [wAITargetMonStatus], a
 	call ReadPlayerMonCurHPAndStatus
 	ld hl, wBattleMonHP
 	ld a, [hli]
@@ -2585,6 +2589,12 @@ PartyMenuOrRockOrRun:
 .notAlreadyOut
 	call HasMonFainted
 	jp z, .partyMonDeselected ; can't switch to fainted mon
+	; Preserve the outgoing target only after a voluntary switch is accepted.
+	callfar StoreBattleMonTypes
+	ld a, [wBattleMonStatus]
+	ld [wAITargetMonStatus], a
+	ld a, 2
+	ld [wAIMoveSpamAvoider], a
 	ld a, $1
 	ld [wActionResultOrTookBattleTurn], a
 	call GBPalWhiteOut
@@ -5550,6 +5560,11 @@ AIGetTypeEffectiveness:
 	ld a, [wEnemyMoveType]
 	ld d, a                    ; d = type of enemy move
 	ld hl, wBattleMonType
+	ld a, [wAIMoveSpamAvoider]
+	cp 2
+	jr nz, .targetTypes
+	ld hl, wAITargetMonType1 ; evaluate the outgoing mon, not its replacement
+.targetTypes
 	ld b, [hl]                 ; b = type 1 of player's pokemon
 	inc hl
 	ld c, [hl]                 ; c = type 2 of player's pokemon

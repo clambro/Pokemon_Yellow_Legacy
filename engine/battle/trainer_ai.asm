@@ -225,6 +225,9 @@ AIMoveChoiceModification1:
 	and SLP_MASK
 	jp nz, .nextMove ; if we just healed sleep or switched out a sleeping pokemon, 
 					 ; the AI shouldn't predict this perfectly when deciding whether to use dream eater
+	ld a, [wAIMoveSpamAvoider]
+	cp 2
+	jr z, .discourage ; the outgoing mon was awake; ignore the replacement's status
 	ld a, [wBattleMonStatus]
 	and SLP_MASK
 	jr z, .discourage ; heavily discourage, if the player isn't asleep avoid using dream eater

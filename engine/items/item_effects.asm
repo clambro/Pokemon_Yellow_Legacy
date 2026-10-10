@@ -908,6 +908,19 @@ RefusingText:
 	text_far _RefusingText
 	text_end
 
+StoreAIStatusBeforeCure:
+	; Called only for a successful cure of the active mon, before clearing its status.
+	ld a, [wIsInBattle]
+	and a
+	ret z
+	ld a, [wBattleMonStatus]
+	and a
+	ret z
+	ld [wAITargetMonStatus], a
+	ld a, 1
+	ld [wAIMoveSpamAvoider], a
+	ret
+
 ItemUseVitamin:
 	ld a, [wIsInBattle]
 	and a
@@ -1010,6 +1023,7 @@ ItemUseMedicine:
 	cp d ; is pokemon the item was used on active in battle?
 	jp nz, .doneHealing
 ; if it is active in battle
+	call StoreAIStatusBeforeCure
 	xor a
 	ld [wBattleMonStatus], a ; remove the status ailment in the in-battle pokemon data
 	push hl
@@ -1305,6 +1319,7 @@ ItemUseMedicine:
 	ld a, [wcf91]
 	cp FULL_RESTORE
 	jr nz, .calculateHPBarCoords
+	call StoreAIStatusBeforeCure
 	xor a
 	ld [wBattleMonStatus], a ; remove the status ailment in the in-battle pokemon data
 .calculateHPBarCoords
