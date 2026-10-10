@@ -274,7 +274,7 @@ AIMoveChoiceModification1:
 	pop hl
 	jp .nextMove
 .checkNoMirrorMoveOnFirstTurn
-	ld a, [wPlayerLastSelectedMove]
+	ld a, [wPlayerUsedMove]
 	and a
 	jp z, .discourage ; don't use mirror move if the player has never selected a move yet
 	jp .nextMove
