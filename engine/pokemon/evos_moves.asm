@@ -737,6 +737,9 @@ PrepareRelearnableMoveList:: ; I don't know how the fuck you're a single colon i
 	push hl
 	;c = buffer length
 .buffer_loop
+	inc c
+	dec c
+	jr z, .end_buffer_loop ; the count byte is not a move
 	ld hl, wMoveBuffer
 	ld b, 0
 	add hl, bc	;move to buffer at current c value
@@ -745,9 +748,6 @@ PrepareRelearnableMoveList:: ; I don't know how the fuck you're a single colon i
 	cp b
 	ld a, b	;a = move id
 	jr z, .move_in_buffer
-	inc c
-	dec c
-	jr z, .end_buffer_loop	;jump out if start of buffer is reached
 	dec c	;else decrement c and loop again
 	jr .buffer_loop
 .move_in_buffer

@@ -1822,11 +1822,11 @@ GolduckEvosMoves:
 ; Evolutions
 	db 0
 ; Learnset
-	db 28, TAIL_WHIP
 	db 10, DISABLE
 	db 15, CONFUSION
 	db 17, BUBBLEBEAM
 	db 23, SCREECH
+	db 28, TAIL_WHIP
 	db 40, FURY_SWIPES
 	db 42, PSYCHIC_M
 	db 45, AMNESIA
