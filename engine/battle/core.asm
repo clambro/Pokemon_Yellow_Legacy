@@ -2593,6 +2593,10 @@ PartyMenuOrRockOrRun:
 	callfar StoreBattleMonTypes
 	ld a, [wBattleMonStatus]
 	ld [wAITargetMonStatus], a
+	ld a, [wBattleMonSpeed]
+	ld [wAITargetMonSpeed], a
+	ld a, [wBattleMonSpeed + 1]
+	ld [wAITargetMonSpeed + 1], a
 	ld a, 2
 	ld [wAIMoveSpamAvoider], a
 	ld a, $1

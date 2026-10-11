@@ -606,7 +606,8 @@ wLinkBattleRandomNumberListIndex:: db
 ; number of times remaining that AI action can occur
 wAICount:: db
 
-	ds 2
+; Outgoing battle speed, valid only when wAIMoveSpamAvoider is 2.
+wAITargetMonSpeed:: dw
 
 wEnemyMoveListIndex:: db
 

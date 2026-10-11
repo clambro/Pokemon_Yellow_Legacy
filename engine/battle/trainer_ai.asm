@@ -370,7 +370,7 @@ CheckStatusImmunity:
 
 ;;;;;;;;;; PureRGBnote: ADDED: function that allows AI to avoid OHKO moves if they will never do anything to the player's pokemon due to speed differences
 WillOHKOMoveAlwaysFail:
-	call CompareSpeed
+	call CompareAITargetSpeed
 	jr c, .userIsSlower
 	and a
 	ret
@@ -538,12 +538,16 @@ AIMoveChoiceModification3:
 	ret
 
 ;;;;;;;;;; PureRGBnote: ADDED: function that allows AI to be aware if they are slower than the opponent. Allows them to prefer priority moves.
-CompareSpeed:
+CompareAITargetSpeed:
 	push hl
 	push de
 	push bc
 	ld hl, wEnemyMonSpeed + 1
 	ld de, wBattleMonSpeed + 1
+	ld a, [wAIMoveSpamAvoider]
+	cp 2
+	jr nz, .compareSpeed
+	ld de, wAITargetMonSpeed + 1
 .compareSpeed
 ; check if current speed is higher than the target's
 	ld a, [de]
