@@ -372,10 +372,33 @@ GainExperience:
 	pop bc
 	predef_jump FlagActionPredef ; set the fought current enemy flag for the mon that is currently out
 
-; divide enemy base stats, catch rate, and base exp by the number of mons gaining exp
+; exclude fainted recipients, then divide exp data by the eligible count
 DivideExpDataByNumMonsGainingExp:
 	ld a, [wPartyGainExpFlags]
 	ld b, a
+	ld a, [wPartyCount]
+	ld e, a
+	ld c, 1
+	ld hl, wPartyMon1HP
+.filterFaintedLoop
+	ld a, [hli]
+	or [hl]
+	dec hl
+	jr nz, .nextRecipient
+	ld a, c
+	cpl
+	and b
+	ld b, a
+.nextRecipient
+	push bc
+	ld bc, wPartyMon2 - wPartyMon1
+	add hl, bc
+	pop bc
+	sla c
+	dec e
+	jr nz, .filterFaintedLoop
+	ld a, b
+	ld [wPartyGainExpFlags], a
 	xor a
 	ld c, $8
 	ld d, $0
@@ -387,7 +410,7 @@ DivideExpDataByNumMonsGainingExp:
 	dec c
 	jr nz, .countSetBitsLoop
 	cp $2
-	ret c ; return if only one mon is gaining exp
+	ret c ; no division needed for zero or one recipient
 	ld [wd11e], a ; store number of mons gaining exp
 	ld hl, wEnemyMonBaseStats
 	ld c, wEnemyMonBaseExp + 1 - wEnemyMonBaseStats

@@ -858,7 +858,6 @@ FaintEnemyPokemon:
 	ld [wBattleResult], a
 	ld b, EXP_ALL
 	call IsItemInBag
-	push af
 	jr z, .giveExpToMonsThatFought ; if no exp all, then jump
 
 ; the player has exp all
@@ -869,22 +868,23 @@ FaintEnemyPokemon:
 	ld b, NUM_STATS + 2
 .halveExpDataLoop
 	srl [hl]
-	inc hl
+	ld a, [hli]
+	push af ; preserve the half-pool before participant division
 	dec b
 	jr nz, .halveExpDataLoop
 
-; give exp (divided evenly) to the mons that actually fought in battle against the enemy mon that has fainted
-; if exp all is in the bag, this will be only be half of the stat exp and normal exp, due to the above loop
-.giveExpToMonsThatFought
-	xor a
-	ld [wBoostExpByExpAll], a
-	callfar GainExperience
+	call .giveExpToMonsThatFought
+	ld hl, wEnemyMonBaseExp
+	ld b, NUM_STATS + 2
+.restoreExpDataLoop
 	pop af
-	ret z ; return if no exp all
+	ld [hld], a
+	dec b
+	jr nz, .restoreExpDataLoop
 
 ; the player has exp all
-; now, set the gain exp flag for every party member
-; half of the total stat exp and normal exp will divided evenly amongst every party member
+; nominate the whole party; GainExperience excludes fainted mons before division
+; distribute the untouched half of stat exp and normal exp among the recipients
 	ld a, $1
 	ld [wBoostExpByExpAll], a
 	ld a, [wPartyCount]
@@ -896,6 +896,11 @@ FaintEnemyPokemon:
 	jr nz, .gainExpFlagsLoop
 	ld a, b
 	ld [wPartyGainExpFlags], a
+	jpfar GainExperience
+
+.giveExpToMonsThatFought
+	xor a
+	ld [wBoostExpByExpAll], a
 	jpfar GainExperience
 
 EnemyMonFaintedText:
