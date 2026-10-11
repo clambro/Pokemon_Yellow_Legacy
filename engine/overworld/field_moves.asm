@@ -69,6 +69,8 @@ TryCut:
 	and a
 	jr nz, TrySurf.no2
 	call GetPartyMonName2
+	ld a, [wTileInFrontOfPlayer]
+	ld [wCutTile], a
 	farcall Cut2
 	call CloseFieldMoveTextBox
 	jr TrySurf.yes2
