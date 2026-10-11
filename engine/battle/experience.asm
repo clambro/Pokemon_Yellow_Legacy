@@ -95,24 +95,12 @@ GainExperience:
 	inc hl
 	inc hl
 	inc hl
-; add the gained exp to the party mon's exp
-	ld b, [hl]
+; Save the award before calculating the cap, which uses the same math buffers.
 	ldh a, [hQuotient + 3]
 	ld [wExpAmountGained + 1], a
-	add b
-	ld [hld], a
-	ld b, [hl]
 	ldh a, [hQuotient + 2]
 	ld [wExpAmountGained], a
-	adc b
-	ld [hl], a
-	jr nc, .noCarry
-	dec hl
-	inc [hl]
-	inc hl
-.noCarry
 ; calculate exp for the mon at max level, and cap the exp at that value
-	inc hl
 	push hl
 	ld a, [wWhichPokemon]
 	ld c, a
@@ -175,6 +163,27 @@ GainExperience:
 	sbc c
 	ld a, [hl]
 	sbc b
+	jr nc, .next2 ; already at or above the cap: preserve existing exp
+; add the award only when below the cap
+	inc hl
+	inc hl
+	ld a, [wExpAmountGained + 1]
+	add [hl]
+	ld [hld], a
+	ld a, [wExpAmountGained]
+	adc [hl]
+	ld [hld], a
+	ld a, [hl]
+	adc 0
+	ld [hli], a
+	inc hl
+; compare the updated exp with the cap
+	ld a, [hld]
+	sub d
+	ld a, [hld]
+	sbc c
+	ld a, [hl]
+	sbc b
 	jr c, .next2
 ; the mon's exp is greater than the max exp, so overwrite it with the max exp
 	ld a, b
@@ -209,7 +218,7 @@ GainExperience:
 ;;;;;;;;;; PureRGBnote: FIXED: fixing skip move-learn glitch: need to store the current level in wram
 	ld [wTempLevelStore], a
 	cp d
-	jp z, .nextMon ; if level didn't change, go to next mon
+	jp nc, .nextMon ; only process level increases
 ;;;;;;;;;;
 	ld a, [wCurEnemyLVL]
 	push af

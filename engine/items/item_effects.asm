@@ -1531,7 +1531,7 @@ ItemUseMedicine:
 	pop hl
 	ld a, [hl] ; a = level
 	cp b ; MAX_LEVEL on normal mode, level cap on hard mode
-	jr z, .vitaminNoEffect ; can't raise level above 100
+	jr nc, .vitaminNoEffect ; can't raise a mon at or above the cap
 	inc a
 	ld [hl], a ; store incremented level
 	ld [wCurEnemyLVL], a

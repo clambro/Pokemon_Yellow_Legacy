@@ -115,6 +115,11 @@ DaycareGentlemanText:
 	jr nc, .next1
 	ld b, 12 ; Onix's level
 .next1
+	ld a, [wDayCareMonBoxLevel]
+	cp b
+	jr c, .storeMaxLevel
+	ld b, a ; never lower a mon below its deposited level
+.storeMaxLevel
 	ld a, b
 	ld [wMaxDaycareLevel], a
 	ld a, d
@@ -142,9 +147,12 @@ DaycareGentlemanText:
 	ld a, [hl]
 	ld [wDayCareStartLevel], a
 	cp d
-	ld [hl], d
+	jr c, .levelIncreased
+	ld d, a
 	ld hl, .MonNeedsMoreTimeText
-	jr z, .next
+	jr .next
+.levelIncreased
+	ld [hl], d
 	ld a, [wDayCareStartLevel]
 	ld b, a
 	ld a, d

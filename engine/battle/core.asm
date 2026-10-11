@@ -4155,30 +4155,32 @@ CheckForDisobedience:
 	farcall GetBadgesObtained
 	ld a, [wNumSetBits]
 	cp 8
-	ld a, 65 ; Jolteon/Flareon/Vaporeon's level
-	jr nc, .next
+	ld b, 65 ; Jolteon/Flareon/Vaporeon's level
+	jr nc, .hardModeThreshold
 	cp 7
-	ld a, 55 ; Rhydon's level
-	jr nc, .next
+	ld b, 55 ; Rhydon's level
+	jr nc, .hardModeThreshold
 	cp 6
-	ld a, 53 ; Magmar's level
-	jr nc, .next
+	ld b, 53 ; Magmar's level
+	jr nc, .hardModeThreshold
 	cp 5
-	ld a, 50 ; Alakazam's level
-	jr nc, .next
-    cp 4
-	ld a, 43 ; Venomoth's level
-	jr nc, .next
+	ld b, 50 ; Alakazam's level
+	jr nc, .hardModeThreshold
+	cp 4
+	ld b, 43 ; Venomoth's level
+	jr nc, .hardModeThreshold
 	cp 3
-	ld a, 35 ; Vileplume's level
-	jr nc, .next
+	ld b, 35 ; Vileplume's level
+	jr nc, .hardModeThreshold
 	cp 2
-    ld a, 24 ; Bit below Raichu's level
-	jr nc, .next
+	ld b, 24 ; Bit below Raichu's level
+	jr nc, .hardModeThreshold
 	cp 1
-	ld a, 21 ; Starmie's level
-	jr nc, .next
-	ld a, 12 ; Onix's level
+	ld b, 21 ; Starmie's level
+	jr nc, .hardModeThreshold
+	ld b, 12 ; Onix's level
+.hardModeThreshold
+	ld a, b
 	jp .next
 .NormalMode2
 	inc hl
