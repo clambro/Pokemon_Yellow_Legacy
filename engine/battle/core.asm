@@ -5562,58 +5562,72 @@ AdjustDamageForMoveType:
 .done
 	ret
 
-; function to tell how effective the type of an enemy attack is on the player's current pokemon
-; this doesn't take into account the effects that dual types can have
-; (e.g. 4x weakness / resistance, weaknesses and resistances canceling)
-; the result is stored in [wTypeEffectiveness]
-; as far is can tell, this is only used once in some AI code to help decide which move to use
+; Combine both defensive types for trainer move scoring.
+; Each chart entry is applied once, including when both type fields are equal.
 AIGetTypeEffectiveness:
 	ld a, [wEnemyMoveType]
-	ld d, a                    ; d = type of enemy move
+	ld d, a
 	ld hl, wBattleMonType
 	ld a, [wAIMoveSpamAvoider]
 	cp 2
 	jr nz, .targetTypes
 	ld hl, wAITargetMonType1 ; evaluate the outgoing mon, not its replacement
 .targetTypes
-	ld b, [hl]                 ; b = type 1 of player's pokemon
+	ld b, [hl]
 	inc hl
-	ld c, [hl]                 ; c = type 2 of player's pokemon
-	; initialize to neutral effectiveness
+	ld c, [hl]
 	ld a, EFFECTIVE
 	ld [wTypeEffectiveness], a
+	ld e, 0 ; whether any non-neutral chart entry matched
 	ld hl, TypeEffects
 .loop
 	ld a, [hli]
 	cp $ff
-	ret z
-	cp d                      ; match the type of the move
+	jr z, .done
+	cp d
 	jr nz, .nextTypePair1
 	ld a, [hli]
-	cp b                      ; match with type 1 of pokemon
-	jr z, .done
-	cp c                      ; or match with type 2 of pokemon
-	jr z, .done
+	cp b
+	jr z, .applyEffectiveness
+	cp c
+	jr z, .applyEffectiveness
 	jr .nextTypePair2
-.nextTypePair1
-	inc hl
+.applyEffectiveness
+	ld e, 1
+	ld a, [hl]
+	and a
+	jr z, .storeEffectiveness ; immunity remains zero through later multipliers
+	cp NOT_VERY_EFFECTIVE
+	ld a, [wTypeEffectiveness]
+	jr z, .resisted
+	add a ; SUPER_EFFECTIVE
+	jr .storeEffectiveness
+.resisted
+	srl a
+.storeEffectiveness
+	ld [wTypeEffectiveness], a
 .nextTypePair2
 	inc hl
 	jr .loop
+.nextTypePair1
+	inc hl
+	jr .nextTypePair2
 .done
-	; 40% chance for Lorelei's Dewgong to ignore type effectiveness?
+	; Preserve Dewgong's single 40% roll, only when a chart entry matched.
+	ld a, e
+	and a
+	ret z
 	ld a, [wTrainerClass]
 	cp LORELEI
-	jr nz, .ok
+	ret nz
 	ld a, [wEnemyMonSpecies]
 	cp DEWGONG
-	jr nz, .ok
+	ret nz
 	call BattleRandom
-	cp $66 ; 40 percent
-	ret c
-.ok
-	ld a, [hl]
-	ld [wTypeEffectiveness], a ; store damage multiplier
+	cp $66
+	ret nc
+	ld a, EFFECTIVE
+	ld [wTypeEffectiveness], a
 	ret
 
 INCLUDE "data/types/type_matchups.asm"
